@@ -13,14 +13,19 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.iremaksoy.fitnesstracker",
+      "infoPlist": {
+        "NSUserNotificationUsageDescription": "Egzersiz hatırlatmaları almak istiyorum."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.iremaksoy.fitnesstracker"
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -4,8 +4,7 @@ const exercises = [
     title: "Kalça Egzersizi",
     category: "Alt Vücut",
     durationOptions: [5, 8, 10],
-    video:
-      "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZTRlY2Fvbjh3NTdiZHRrMGJiem5kcXB3M251MHMyOHRsMmlzY21kYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3NwOzakbqzOrsfMKBC/giphy.gif",
+    video: "https://sporium.net/wp-content/uploads/2022/04/donkey-kick.gif",
     image: require("../assets/images/exercise-1.png"),
 
     steps: [
@@ -30,7 +29,7 @@ const exercises = [
     id: 5,
     title: "Üst Vücut Güçlendirici",
     video:
-      "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZTRlY2Fvbjh3NTdiZHRrMGJiem5kcXB3M251MHMyOHRsMmlzY21kYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3NwOzakbqzOrsfMKBC/giphy.gif",
+      "https://fitnessprogramer.com/wp-content/uploads/2021/06/Dynamic-Chest-Stretch.gif",
     category: "Üst Vücut",
     durationOptions: [6, 9],
     image: require("../assets/images/exercise-2.png"),
@@ -38,12 +37,12 @@ const exercises = [
       {
         id: 6,
         name: "Push-up",
-        gif: "https://media1.tenor.com/m/5z4q0v91sNYAAAAC/squats-exercise.gif",
+        gif: "https://static.wixstatic.com/media/00b9a7_c54089f1c94f495ab637fa3729c51913~mv2.gif",
       },
       {
         id: 7,
         name: "Shoulder Press",
-        gif: "https://media1.tenor.com/m/5z4q0v91sNYAAAAC/squats-exercise.gif",
+        gif: "https://static.wixstatic.com/media/00b9a7_07cd1f6fdafe402a91fff2d1364cca3c~mv2.gif",
       },
     ],
   },
@@ -53,30 +52,31 @@ const exercises = [
     category: "Alt Vücut",
     durationOptions: [5, 8, 10],
     video:
-      "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZTRlY2Fvbjh3NTdiZHRrMGJiem5kcXB3M251MHMyOHRsMmlzY21kYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3NwOzakbqzOrsfMKBC/giphy.gif",
+      "https://fitnessprogramer.com/wp-content/uploads/2021/02/Mountain-climber.gif",
     image: require("../assets/images/exercise-3.png"),
     steps: [
       {
         id: 9,
         name: "Squat",
-        gif: "https://media1.tenor.com/m/5z4q0v91sNYAAAAC/squats-exercise.gif",
+        gif: "https://static.wixstatic.com/media/00b9a7_2e35f19f6215460ebf70319b7bcbcecb~mv2.gif",
       },
       {
         id: 10,
         name: "Front Lunges",
-        gif: "https://media1.tenor.com/m/5z4q0v91sNYAAAAC/squats-exercise.gif",
+        gif: "https://fitnessprogramer.com/wp-content/uploads/2021/05/Split-Squat.gif",
       },
       {
         id: 11,
         name: "Side Lunges",
-        gif: "https://media1.tenor.com/m/5z4q0v91sNYAAAAC/squats-exercise.gif",
+        gif: "https://fitnessprogramer.com/wp-content/uploads/2021/05/Side-Lunge-Stretch.gif",
       },
     ],
   },
   {
     id: 12,
     title: "Yoga",
-    video: "https://media1.tenor.com/m/oO2Y6-o7La0AAAAd/yoga-yoga-lover.gif",
+    video:
+      "https://i.pinimg.com/originals/03/79/a1/0379a132ca92dd0ca6b23b710bc7a592.gif",
     category: "Üst Vücut",
     durationOptions: [6, 9],
     image: require("../assets/images/exercise-6.png"),
@@ -98,7 +98,7 @@ const exercises = [
     title: "Tüm vücut",
     category: "Üst Vücut",
     video:
-      "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZTRlY2Fvbjh3NTdiZHRrMGJiem5kcXB3M251MHMyOHRsMmlzY21kYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3NwOzakbqzOrsfMKBC/giphy.gif",
+      "https://i.pinimg.com/originals/03/79/a1/0379a132ca92dd0ca6b23b710bc7a592.gif",
     durationOptions: [6, 9],
     image: require("../assets/images/exercise-4.png"),
     steps: [
@@ -119,14 +119,14 @@ const exercises = [
     title: "Kardiyo",
     category: "Alt Vücut",
     video:
-      "https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZTRlY2Fvbjh3NTdiZHRrMGJiem5kcXB3M251MHMyOHRsMmlzY21kYiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3NwOzakbqzOrsfMKBC/giphy.gif",
+      "https://static.wixstatic.com/media/00b9a7_628058c3e1b147f2b54fbf0f0f31c721~mv2.gif",
     durationOptions: [5, 8, 10],
     image: require("../assets/images/exercise-5.png"),
     steps: [
       {
         id: 19,
         name: "Burpee",
-        gif: "https://media1.tenor.com/m/u2-VJiigKCkAAAAC/exercise-jump.gif",
+        gif: "https://static.wixstatic.com/media/00b9a7_611f06ec44c846a0af54c01ee3b8409a~mv2.gif",
       },
       {
         id: 20,

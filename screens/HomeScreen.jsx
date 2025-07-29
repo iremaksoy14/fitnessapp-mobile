@@ -8,6 +8,7 @@ import {
   StyleSheet,
 } from "react-native";
 import exercisesData from "../data/exercises.js";
+// import { db } from "../utils/db.js";
 
 import { Dimensions } from "react-native";
 
@@ -21,6 +22,12 @@ export default function HomeScreen({ navigation }) {
   const [exercises, setExercises] = useState([]);
 
   useEffect(() => {
+    // db.transaction((tx) => {
+    //   tx.executeSql(`SELECT * FROM exercises`, [], (_, { rows }) => {
+    //     const items = rows._array;
+    //     setExercises(items);
+    //   });
+    // });
     setExercises(exercisesData);
   }, []);
 
@@ -39,6 +46,7 @@ export default function HomeScreen({ navigation }) {
     );
   };
 
+  console.log("itemwidth", itemWidth);
   return (
     <View style={styles.container}>
       {/* <Text style={styles.header}>Kategoriler</Text> */}
@@ -47,7 +55,7 @@ export default function HomeScreen({ navigation }) {
         renderItem={renderExercise}
         keyExtractor={(item) => item.id}
         numColumns={2}
-        columnWrapperStyle={{ justifyContent: "center",gap:spacing}}
+        columnWrapperStyle={{ justifyContent: "center", gap: spacing }}
         // contentContainerStyle={{padding:10}}
         // contentContainerStyle={{ paddingHorizontal: 15, paddingTop: 16 }}
       />
@@ -67,25 +75,20 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    // marginBottom: 15,
-    // backgroundColor: "#f5f5f5",
-    // borderRadius: 8,
-    // borderColor: "#f6f6f6",
-    // borderWidth: 1,
-    // overflow: "hidden",
-    // flex: 1,
-    width: itemWidth,
+   width: itemWidth,
     marginBottom: spacing,
     backgroundColor: "#f5f5f5",
     borderRadius: 8,
+    justifyContent:"center",
+  
     overflow: "hidden",
   },
   image: {
     width: "100%",
-  height:160,
-  
+  height:200,
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
+    resizeMode: "cover",
   },
   title: { fontSize: 18, fontWeight: "bold", padding: 8 },
   category: {

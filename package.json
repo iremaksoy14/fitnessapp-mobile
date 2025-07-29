@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "-": "^0.0.1",
     "@expo/vector-icons": "^14.1.0",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-community/datetimepicker": "8.4.1",
@@ -30,7 +31,8 @@
     "lottie-ios": "^4.5.1",
     "lottie-react-native": "7.2.2",
     "moment": "^2.30.1",
-    "react": "19.0.0",
+    "native": "^0.3.3",
+    "react": "^19.0.0",
     "react-native": "0.79.4",
     "react-native-calendars": "^1.1313.0",
     "react-native-chart-kit": "^6.12.0",
@@ -47,7 +49,12 @@
     "react-native-toast-message": "^2.3.3",
     "react-native-uuid": "^2.0.3",
     "react-native-webview": "13.13.5",
-    "uuid": "^11.1.0"
+    "save": "^2.9.0",
+    "sqlite": "^5.1.1",
+    "storage": "^0.2.0",
+    "uuid": "^11.1.0",
+    "expo-sqlite": "~15.2.14",
+    "undefined": "expo-sqlite/legacy"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"

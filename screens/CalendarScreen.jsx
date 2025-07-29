@@ -54,78 +54,79 @@ export default function CalendarScreen() {
     });
   };
 
-  return (
-    <ScrollView style={styles.container} howsVerticalScrollIndicator={false}>
-      <Calendar
-        onDayPress={onDayPress}
-        markedDates={{
-          ...markedDates,
-          [selectedDate]: {
-            ...markedDates[selectedDate],
-            selected: true,
-            selectedColor: "#436eee",
-          },
-        }}
-        style={styles.calendar}
-        theme={{
-          selectedDayBackgroundColor: "#436eee",
-          todayTextColor: "#436eee",
-          arrowColor: "#436eee",
-        }}
-      />
-
-      <View style={styles.summaryContainer}>
-        <Image
-          source={require("../assets/images/runner.png")}
-          style={styles.runnerImage}
-        />
-        <View style={styles.summaryTextContainer}>
-          <Text style={styles.summaryTitle}>Today you run for</Text>
-          <Text style={styles.summaryDistance}>
-            {" "}
-            {(stepCount * 0.000762).toFixed(2)} km
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.detailsButton}>
-          <Text style={styles.detailsText}>Details</Text>
-        </TouchableOpacity>
-      </View>
-
-      <LinearGradient colors={["#657ef8", "#5d5df7"]} style={styles.infoCard}>
-        <View style={styles.infoRow}>
-          <MaterialCommunityIcons name="shoe-print" size={30} color="white" />
-          <Text style={styles.infoText}>{stepCount} steps</Text>
-        </View>
-        <LinearGradient
-          colors={["#ffffff", "transparent"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientLine}
+  const renderheader = () => {
+    return (
+      <View>
+        <Calendar
+          onDayPress={onDayPress}
+          markedDates={{
+            ...markedDates,
+            [selectedDate]: {
+              ...markedDates[selectedDate],
+              selected: true,
+              selectedColor: "#436eee",
+            },
+          }}
+          style={styles.calendar}
+          theme={{
+            selectedDayBackgroundColor: "#436eee",
+            todayTextColor: "#436eee",
+            arrowColor: "#436eee",
+          }}
         />
 
-        <View style={styles.infoRow}>
-          <EvilIcons name="heart" size={30} color="white" />
-          <Text style={styles.infoText}>98 bpm</Text>
+        <View style={styles.summaryContainer}>
+          <Image
+            source={require("../assets/images/runner.png")}
+            style={styles.runnerImage}
+          />
+          <View style={styles.summaryTextContainer}>
+            <Text style={styles.summaryTitle}>Today you run for</Text>
+            <Text style={styles.summaryDistance}>
+              {" "}
+              {(stepCount * 0.000762).toFixed(2)} km
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.detailsButton}>
+            <Text style={styles.detailsText}>Details</Text>
+          </TouchableOpacity>
         </View>
-        <LinearGradient
-          colors={["#ffffff", "transparent"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientLine}
-        />
-        <View style={styles.infoRow}>
-          <MaterialCommunityIcons name="fire" size={30} color="white" />
-          <Text style={styles.infoText}>460 calories</Text>
-        </View>
-        <LinearGradient
-          colors={["#ffffff", "transparent"]}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.gradientLine}
-        />
 
-        {/* 🎯 SVG ile kavisli çizgi */}
-        {/* <Svg height="80" width="100%" style={styles.curvedLine}>
+        <LinearGradient colors={["#657ef8", "#5d5df7"]} style={styles.infoCard}>
+          <View style={styles.infoRow}>
+            <MaterialCommunityIcons name="shoe-print" size={30} color="white" />
+            <Text style={styles.infoText}>{stepCount} steps</Text>
+          </View>
+          <LinearGradient
+            colors={["#ffffff", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientLine}
+          />
+
+          <View style={styles.infoRow}>
+            <EvilIcons name="heart" size={30} color="white" />
+            <Text style={styles.infoText}>98 bpm</Text>
+          </View>
+          <LinearGradient
+            colors={["#ffffff", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientLine}
+          />
+          <View style={styles.infoRow}>
+            <MaterialCommunityIcons name="fire" size={30} color="white" />
+            <Text style={styles.infoText}>460 calories</Text>
+          </View>
+          <LinearGradient
+            colors={["#ffffff", "transparent"]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={styles.gradientLine}
+          />
+
+          {/* 🎯 SVG ile kavisli çizgi */}
+          {/* <Svg height="80" width="100%" style={styles.curvedLine}>
           <Path
             d="M0 70 C 100 10, 250 60, 500 10"
             stroke="#ffffffcc"
@@ -141,26 +142,31 @@ export default function CalendarScreen() {
             strokeWidth="3"
           />
         </Svg> */}
-      </LinearGradient>
+        </LinearGradient>
 
-      <Text style={styles.exerciseHeader}>
-        {moment(selectedDate).format("DD.MM.YYYY")} Egzersizleri
-      </Text>
+        <Text style={styles.exerciseHeader}>
+          {moment(selectedDate).format("DD.MM.YYYY")} Egzersizleri
+        </Text>
+      </View>
+    );
+  };
 
-      <FlatList
-        data={selectedExercises}
-        keyExtractor={(item, index) => `${item}-${index}`}
-        renderItem={({ item }) => (
-          <View style={styles.exerciseCard}>
-            <Text style={styles.exerciseName}>{item}</Text>
-          </View>
-        )}
-        ListEmptyComponent={
-          <Text style={styles.noData}>Bu gün egzersiz yapılmamış.</Text>
-        }
-        contentContainerStyle={{ paddingBottom: 10 }}
-      />
-    </ScrollView>
+  return (
+    <FlatList
+      // style={{ padding: 16 }}
+      ListHeaderComponent={renderheader}
+      data={selectedExercises}
+      keyExtractor={(item, index) => `${item}-${index}`}
+      renderItem={({ item }) => (
+        <View style={styles.exerciseCard}>
+          <Text style={styles.exerciseName}>{item}</Text>
+        </View>
+      )}
+      ListEmptyComponent={
+        <Text style={styles.noData}>Bugün egzersiz yapılmamış.</Text>
+      }
+      contentContainerStyle={{ padding: 16 }}
+    />
   );
 }
 
@@ -242,8 +248,9 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   exerciseCard: {
-    backgroundColor: "#f2f2f2",
+    backgroundColor: "white",
     padding: 14,
+
     marginVertical: 5,
     borderRadius: 10,
   },
@@ -254,7 +261,7 @@ const styles = StyleSheet.create({
   },
   noData: {
     fontSize: 14,
-    color: "gray",
+    color: "black",
     textAlign: "center",
     marginTop: 6,
   },

@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+// screens/CalendarScreen.jsx
+import React, { useEffect, useState, useCallback, useMemo } from "react";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import EvilIcons from "@expo/vector-icons/EvilIcons";
 import Svg, { Path, Circle } from "react-native-svg";
@@ -10,21 +11,46 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  ScrollView,
 } from "react-native";
 import { Calendar } from "react-native-calendars";
 import { getExerciseLogs } from "../utils/storage";
 import moment from "moment";
 import { LinearGradient } from "expo-linear-gradient";
+import { makeStyles } from "../helper/makeStyles";
+import { useScale } from "../helper/useScale";
 
-export default function CalendarScreen() {
+export default function CalendarScreen({ navigation }) {
+  const s = useStyles();
+  const { width, hs } = useScale({ maxLayoutWidth: 700 });
+  const padding = hs(16);
+  const innerW  = Math.max(0, width - 2 * padding);
+
   const [markedDates, setMarkedDates] = useState({});
-  const [selectedDate, setSelectedDate] = useState(
-    moment().format("YYYY-MM-DD")
-  );
+  const [selectedDate, setSelectedDate] = useState(moment().format("YYYY-MM-DD"));
   const [selectedExercises, setSelectedExercises] = useState([]);
-
   const [stepCount, setStepCount] = useState(0);
+
+  // Bilgi kartı (ikon + metin) — mevcut yapıyı korudum
+  const [info] = useState([
+    {
+      id: 0,
+      value: 0,
+      text: "steps",
+      icon: <MaterialCommunityIcons name="shoe-print" size={30} color="white" />,
+    },
+    {
+      id: 1,
+      value: 98,
+      text: "bpm",
+      icon: <EvilIcons name="heart" size={30} color="white" />,
+    },
+    {
+      id: 2,
+      value: 460,
+      text: "calories",
+      icon: <MaterialCommunityIcons name="fire" size={30} color="white" />,
+    },
+  ]);
 
   useEffect(() => {
     const fetchLogs = async () => {
@@ -40,34 +66,33 @@ export default function CalendarScreen() {
   }, []);
 
   useEffect(() => {
-    const subscribe = Pedometer.watchStepCount((result) => {
-      setStepCount(result.steps);
-    });
-
-    return () => subscribe.remove();
+    const sub = Pedometer.watchStepCount((res) => setStepCount(res.steps));
+    return () => sub?.remove?.();
   }, []);
-  const onDayPress = (day) => {
+
+  const onDayPress = useCallback((day) => {
     const date = day.dateString;
     setSelectedDate(date);
-    getExerciseLogs().then((logs) => {
-      setSelectedExercises(logs[date] || []);
-    });
-  };
+    getExerciseLogs().then((logs) => setSelectedExercises(logs[date] || []));
+  }, []);
 
-  const renderheader = () => {
+  // Header bileşeni (Calendar + özet + info kartı)
+  const renderHeader = useCallback(() => {
+    const distanceKm = (stepCount * 0.000762).toFixed(2);
+
     return (
-      <View>
+      <View style={{ width:innerW, alignSelf: "center" }}>
         <Calendar
           onDayPress={onDayPress}
           markedDates={{
             ...markedDates,
             [selectedDate]: {
-              ...markedDates[selectedDate],
+              ...(markedDates[selectedDate] || {}),
               selected: true,
               selectedColor: "#436eee",
             },
           }}
-          style={styles.calendar}
+          style={s.calendar}
           theme={{
             selectedDayBackgroundColor: "#436eee",
             todayTextColor: "#436eee",
@@ -75,199 +100,145 @@ export default function CalendarScreen() {
           }}
         />
 
-        <View style={styles.summaryContainer}>
+        <View style={s.summaryContainer}>
           <Image
             source={require("../assets/images/runner.png")}
-            style={styles.runnerImage}
+            style={s.runnerImage}
           />
-          <View style={styles.summaryTextContainer}>
-            <Text style={styles.summaryTitle}>Today you run for</Text>
-            <Text style={styles.summaryDistance}>
-              {" "}
-              {(stepCount * 0.000762).toFixed(2)} km
-            </Text>
+          <View style={s.summaryTextContainer}>
+            <Text style={s.summaryTitle}>Today you run for</Text>
+            <Text style={s.summaryDistance}>{distanceKm} km</Text>
           </View>
-          <TouchableOpacity style={styles.detailsButton}>
-            <Text style={styles.detailsText}>Details</Text>
+          <TouchableOpacity
+            style={s.detailsButton}
+            onPress={() => navigation.navigate("DailyStep")}
+            activeOpacity={0.85}
+          >
+            <Text style={s.detailsText}>Details</Text>
           </TouchableOpacity>
         </View>
 
-        <LinearGradient colors={["#657ef8", "#5d5df7"]} style={styles.infoCard}>
-          <View style={styles.infoRow}>
-            <MaterialCommunityIcons name="shoe-print" size={30} color="white" />
-            <Text style={styles.infoText}>{stepCount} steps</Text>
-          </View>
-          <LinearGradient
-            colors={["#ffffff", "transparent"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.gradientLine}
-          />
-
-          <View style={styles.infoRow}>
-            <EvilIcons name="heart" size={30} color="white" />
-            <Text style={styles.infoText}>98 bpm</Text>
-          </View>
-          <LinearGradient
-            colors={["#ffffff", "transparent"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.gradientLine}
-          />
-          <View style={styles.infoRow}>
-            <MaterialCommunityIcons name="fire" size={30} color="white" />
-            <Text style={styles.infoText}>460 calories</Text>
-          </View>
-          <LinearGradient
-            colors={["#ffffff", "transparent"]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={styles.gradientLine}
-          />
-
-          {/* 🎯 SVG ile kavisli çizgi */}
-          {/* <Svg height="80" width="100%" style={styles.curvedLine}>
-          <Path
-            d="M0 70 C 100 10, 250 60, 500 10"
-            stroke="#ffffffcc"
-            strokeWidth="4"
-            fill="none"
-          />
-          <Circle
-            cx="250"
-            cy="40"
-            r="8"
-            fill="#fff"
-            stroke="#ff6b6b"
-            strokeWidth="3"
-          />
-        </Svg> */}
+        <LinearGradient colors={["#657ef8", "#5d5df7"]} style={s.infoCard}>
+          {info.map((it) => (
+            <View key={it.id}>
+              <View style={s.infoRow}>
+                {it.icon}
+                <Text style={s.infoText}>
+                  {it.value} {it.text}
+                </Text>
+              </View>
+              <LinearGradient
+                colors={["#ffffff", "transparent"]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={s.gradientLine}
+              />
+            </View>
+          ))}
+          {/* Eğer kavisli çizgi kullanacaksan: */}
+          {/* <Svg height={hs(80)} width="100%" style={s.curvedLine}>
+              <Path d="M0 70 C 100 10, 250 60, 500 10" stroke="#ffffffcc" strokeWidth="4" fill="none" />
+              <Circle cx="250" cy="40" r="8" fill="#fff" stroke="#ff6b6b" strokeWidth="3" />
+            </Svg> */}
         </LinearGradient>
 
-        <Text style={styles.exerciseHeader}>
+        <Text style={s.exerciseHeader}>
           {moment(selectedDate).format("DD.MM.YYYY")} Egzersizleri
         </Text>
       </View>
     );
-  };
+  }, [width, onDayPress, markedDates, selectedDate, stepCount, s, info, navigation]);
 
   return (
     <FlatList
-      // style={{ padding: 16 }}
-      ListHeaderComponent={renderheader}
+      ListHeaderComponent={renderHeader}
       data={selectedExercises}
       keyExtractor={(item, index) => `${item}-${index}`}
       renderItem={({ item }) => (
-        <View style={styles.exerciseCard}>
-          <Text style={styles.exerciseName}>{item}</Text>
+        <View style={[s.exerciseCard, { width:innerW, alignSelf: "center" }]}>
+          <Text style={s.exerciseName}>{item}</Text>
         </View>
       )}
-      ListEmptyComponent={
-        <Text style={styles.noData}>Bugün egzersiz yapılmamış.</Text>
-      }
-      contentContainerStyle={{ padding: 16 }}
+      ListEmptyComponent={<Text style={s.noData}>Bugün egzersiz yapılmamış.</Text>}
+      contentContainerStyle={{ paddingVertical: padding }} 
+      showsVerticalScrollIndicator={false}
     />
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff", padding: 16 },
+const useStyles = makeStyles(({ hs, fs }) => ({
   calendar: {
-    borderRadius: 10,
+    borderRadius: hs(10),
     elevation: 2,
-    marginBottom: 10,
+    marginBottom: hs(15),
   },
 
   summaryContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#f5f7ff",
-    padding: 12,
-    borderRadius: 12,
-    marginBottom: 12,
+    backgroundColor: "#FFFFFF",
+    padding: hs(12),
+    borderRadius: hs(12),
+    marginBottom: hs(12),
   },
   runnerImage: {
-    width: 100,
-    height: 100,
-    resizeMode: "contain",
-    marginRight: 12,
+    width: hs(100),
+    aspectRatio: 1,
+    resizeMode: "cover",
+    marginRight: hs(12),
   },
-  summaryTextContainer: {
-    flex: 1,
-  },
-  summaryTitle: {
-    fontSize: 14,
-    color: "#333",
-  },
+  summaryTextContainer: { flex: 1 },
+  summaryTitle: { fontSize: fs(14), color: "#333333" },
   summaryDistance: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: fs(18),
+    fontWeight: "700",
     color: "#436eee",
+    marginTop: hs(3),
   },
   detailsButton: {
     backgroundColor: "#ff6b6b",
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 20,
+    paddingVertical: hs(6),
+    paddingHorizontal: hs(12),
+    borderRadius: hs(20),
     elevation: 2,
   },
-  detailsText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 12,
-  },
+  detailsText: { color: "#FFFFFF", fontWeight: "700", fontSize: fs(12) },
 
   infoCard: {
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: hs(16),
+    padding: hs(16),
+    marginBottom: hs(20),
     position: "relative",
     overflow: "hidden",
   },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 6,
-    gap: 10,
+    marginVertical: hs(6),
+    gap: hs(10),
   },
-  infoText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  curvedLine: {
-    position: "absolute",
-    bottom: -10,
-    left: 0,
-  },
+  infoText: { color: "#FFFFFF", fontSize: fs(16), fontWeight: "600" },
+  curvedLine: { position: "absolute", bottom: -10, left: 0 },
 
   exerciseHeader: {
-    fontSize: 16,
+    fontSize: fs(18),
     fontWeight: "600",
-    marginBottom: 8,
-    color: "#333",
+    marginBottom: hs(12),
+    color: "#436eee",
+    textAlign: "center",
   },
   exerciseCard: {
-    backgroundColor: "white",
-    padding: 14,
+    backgroundColor: "#FFFFFF",
+    padding: hs(14),
+    borderRadius: hs(10),
+  },
+  exerciseName: { fontSize: fs(15), fontWeight: "500", color: "#333333" },
 
-    marginVertical: 5,
-    borderRadius: 10,
-  },
-  exerciseName: {
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#333",
-  },
   noData: {
-    fontSize: 14,
-    color: "black",
+    fontSize: fs(14),
+    color: "#000000",
     textAlign: "center",
-    marginTop: 6,
+    marginTop: hs(6),
   },
-  gradientLine: {
-    height: 1.5,
-    width: "100%",
-    marginBottom: 8,
-  },
-});
+  gradientLine: { height: hs(2), width: "100%", marginBottom: hs(8) },
+}));

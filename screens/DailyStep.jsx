@@ -1,18 +1,22 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+// screens/DailyStep.jsx
+import React, { useEffect, useState, useCallback, useMemo } from "react";
+import { View, Text, Image, ScrollView } from "react-native";
 import * as Pedometer from "expo-sensors/build/Pedometer";
 import { LinearGradient } from "expo-linear-gradient";
 import { ProgressBar } from "react-native-paper";
 import { tips, motivationMessages } from "../data/daily";
 import moment from "moment";
-import { Dimensions } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 
-const screenWidth = Dimensions.get("window").width;
+import { makeStyles } from "../helper/makeStyles";
+import { useScale } from "../helper/useScale";
 
 export default function DailyStep() {
-  const [stepCount, setStepCount] = useState(0);
+  const s = useStyles();
+  const { width, hs } = useScale({ maxLayoutWidth: 700 });
+
+  const [stepCount, setStepCount] = useState(56);
   const [motivation, setMotivation] = useState("");
   const [dailyGoal, setDailyGoal] = useState(100);
 
@@ -23,7 +27,9 @@ export default function DailyStep() {
     const index = moment().dayOfYear() % motivationMessages.length;
     setMotivation(motivationMessages[index]);
 
-    return () => subscription.remove();
+    return () => {
+      if (subscription && subscription.remove) subscription.remove();
+    };
   }, []);
 
   useFocusEffect(
@@ -31,182 +37,195 @@ export default function DailyStep() {
       const loadStepGoal = async () => {
         try {
           const savedGoal = await AsyncStorage.getItem("stepGoal");
-          console.log("savedGoal", savedGoal);
-          if (savedGoal) {
-            setDailyGoal(parseInt(savedGoal));
-          }
+          if (savedGoal) setDailyGoal(parseInt(savedGoal, 10));
         } catch (error) {
           console.error("Adım hedefi yüklenemedi:", error);
         }
       };
-
       loadStepGoal();
     }, [])
   );
 
-  console.log("dailyGoal", dailyGoal);
-
-  const distance = (stepCount * 0.000762).toFixed(2); // km
-  const calorie = Math.floor(stepCount * 0.04); // kaba hesap
-
-  const progress = Math.min(stepCount / dailyGoal, 1);
+  const distance = useMemo(() => (stepCount * 0.000762).toFixed(2), [stepCount]); // km
+  const calorie = useMemo(() => Math.floor(stepCount * 0.04), [stepCount]); // kaba hesap
+  const progress = useMemo(
+    () => (dailyGoal > 0 ? Math.min(stepCount / dailyGoal, 1) : 0),
+    [stepCount, dailyGoal]
+  );
+  const percent = useMemo(
+    () => (dailyGoal > 0 ? Math.round((stepCount * 100) / dailyGoal) : 0),
+    [stepCount, dailyGoal]
+  );
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.header}>Bugünkü Adımlarınız</Text>
+    <ScrollView style={s.screen} contentContainerStyle={{ alignItems: "center" }}>
+      {/* İçerik clamp + ortalama */}
+      <View style={[s.container, { width }]}>
+        <Text style={s.header}>Bugünkü Adımlarınız</Text>
 
-      <LinearGradient colors={["#657ef8", "#5d5df7"]} style={styles.card}>
-        <Text style={styles.steps}>{stepCount} adım</Text>
-        <ProgressBar progress={progress} color="#fff" style={styles.progress} />
-        <Text style={styles.goalText}>
-          Hedef: {dailyGoal} adım (%{(stepCount * 100) / dailyGoal})
-        </Text>
-      </LinearGradient>
+        <LinearGradient colors={["#657ef8", "#5d5df7"]} style={s.card}>
+          <Text style={s.steps}>{stepCount} adım</Text>
 
-      <View style={styles.stats}>
-        <View style={styles.statBox}>
-          <Image
-            source={require("../assets/images/steps.png")}
-            style={styles.icon}
+          <ProgressBar
+            progress={progress}
+            color="#FFFFFF"
+            style={s.progress}
           />
-          <Text style={styles.label}>Mesafe</Text>
-          <Text style={styles.value}>{distance} km</Text>
-        </View>
 
-        <View style={styles.statBox}>
-          <Image
-            source={require("../assets/images/calorie.png")}
-            style={styles.icon}
-          />
-          <Text style={styles.label}>Kalori</Text>
-          <Text style={styles.value}>{calorie} kcal</Text>
-        </View>
-      </View>
+          <Text style={s.goalText}>
+            Hedef: {dailyGoal} adım (%{percent})
+          </Text>
+        </LinearGradient>
 
-      <View style={styles.tipBox}>
-        <Text style={styles.tipTitle}>💡 İpuçları</Text>
-        {tips.map((tip, index) => (
-          <View key={index} style={styles.tipItem}>
-            <Text style={styles.bullet}>•</Text>
-            <Text style={styles.tipText}>{tip}</Text>
+        <View style={s.stats}>
+          <View style={s.statBox}>
+            <Image source={require("../assets/images/steps.png")} style={s.icon} />
+            <Text style={s.label}>Mesafe</Text>
+            <Text style={s.value}>{distance} km</Text>
           </View>
-        ))}
-      </View>
 
-      <View style={styles.motivationContainer}>
-        <Text style={styles.motivationLabel}>Motivasyon</Text>
-        <Text style={styles.motivationText}>{motivation}</Text>
+          <View style={s.statBox}>
+            <Image source={require("../assets/images/calorie.png")} style={s.icon} />
+            <Text style={s.label}>Kalori</Text>
+            <Text style={s.value}>{calorie} kcal</Text>
+          </View>
+        </View>
+
+        <View style={s.tipBox}>
+          <Text style={s.tipTitle}>💡 İpuçları</Text>
+          {tips.map((tip, index) => (
+            <View key={index} style={s.tipItem}>
+              <Text style={s.bullet}>•</Text>
+              <Text style={s.tipText}>{tip}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={s.motivationContainer}>
+          <Text style={s.motivationLabel}>Motivasyon</Text>
+          <Text style={s.motivationText}>{motivation}</Text>
+        </View>
       </View>
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+const useStyles = makeStyles(({ hs, fs }) => ({
+  screen: {
     flex: 1,
-    padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
   },
+  container: {
+    padding: hs(20),
+  },
+
   header: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
+    fontSize: fs(20),
+    fontWeight: "700",
+    marginBottom: hs(20),
+    color: "#333333",
   },
+
   card: {
-    backgroundColor: "#657ef8",
-    borderRadius: 16,
-    padding: 20,
-    marginBottom: 30,
+    borderRadius: hs(16),
+    padding: hs(20),
+    overflow: "hidden",
+    marginBottom: hs(30),
     elevation: 3,
   },
   steps: {
-    fontSize: 36,
-    fontWeight: "bold",
-    color: "#fff",
+    fontSize: fs(36),
+    fontWeight: "700",
+    color: "#FFFFFF",
     textAlign: "center",
-    marginBottom: 10,
+    marginBottom: hs(10),
   },
   progress: {
-    height: 8,
-    borderRadius: 10,
+    height: hs(8),
+    borderRadius: hs(10),
     backgroundColor: "#ffffff50",
-    marginBottom: 10,
+    marginBottom: hs(10),
   },
   goalText: {
     textAlign: "center",
-    color: "#fff",
-    fontSize: 14,
+    color: "#FFFFFF",
+    fontSize: fs(14),
+    fontWeight: "700",
   },
+
   stats: {
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
+    marginBottom: hs(16),
   },
   statBox: {
     alignItems: "center",
   },
   icon: {
-    width: 40,
-    height: 40,
-    marginBottom: 6,
+    width: hs(40),
+    height: hs(40),
+    marginBottom: hs(6),
+    resizeMode: "contain",
   },
   label: {
-    fontSize: 14,
-    color: "#555",
+    fontSize: fs(14),
+    color: "#555555",
   },
   value: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
+    fontSize: fs(16),
+    fontWeight: "700",
+    color: "#333333",
   },
-  motivationContainer: {
-    backgroundColor: "#f5f7ff",
-    padding: 16,
-    borderRadius: 12,
 
-    alignItems: "center",
-  },
-  motivationLabel: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#436eee",
-    marginBottom: 6,
-  },
-  motivationText: {
-    fontSize: 16,
-    color: "#333",
-    textAlign: "center",
-    fontWeight: "bold",
-  },
   tipBox: {
     backgroundColor: "#eaf0ff",
-    padding: 12,
-    borderRadius: 12,
-    marginTop: 16,
-    marginBottom: 24,
+    padding: hs(12),
+    borderRadius: hs(12),
+    marginTop: hs(16),
+    marginBottom: hs(24),
   },
   tipTitle: {
-    fontWeight: "bold",
+    fontWeight: "700",
     color: "#436eee",
-    marginBottom: 8,
-    fontSize: 14,
+    marginBottom: hs(8),
+    fontSize: fs(14),
   },
   tipItem: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 6,
+    marginBottom: hs(8),
   },
   bullet: {
-    fontSize: 16,
+    fontSize: fs(18),
     color: "#436eee",
-    marginRight: 6,
-    lineHeight: 20,
+    marginRight: hs(6),
+    lineHeight: fs(20),
   },
   tipText: {
-    fontSize: 13,
-    color: "#333",
+    fontSize: fs(13),
+    color: "#333333",
     flexShrink: 1,
-    lineHeight: 20,
+    lineHeight: fs(20),
   },
-});
+
+  motivationContainer: {
+    backgroundColor: "#f5f7ff",
+    padding: hs(16),
+    borderRadius: hs(12),
+    alignItems: "center",
+    marginBottom: hs(16),
+  },
+  motivationLabel: {
+    fontSize: fs(14),
+    fontWeight: "700",
+    color: "#436eee",
+    marginBottom: hs(6),
+  },
+  motivationText: {
+    fontSize: fs(16),
+    color: "#333333",
+    fontWeight: "700",
+    textAlign: "center",
+  },
+}));

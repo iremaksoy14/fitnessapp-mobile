@@ -1,0 +1,42 @@
+export const theme = {
+  space: {
+    0: 0,
+    1: 4,
+    2: 8,
+    3: 12,
+    4: 16,
+    5: 20,
+    6: 24,
+    8: 32,
+    10: 40,
+    12: 48,
+  },
+  radius: { sm: 8, md: 12, lg: 16, xl: 24 },
+  colors: {
+    bg: "#FFFFFF",
+    text: "#111827",
+    muted: "#6B7280",
+    primary: "#2563EB",
+    surface: "#F3F4F6",
+    purple: "#4F46E5",
+    gray: "#64748B",
+    darkGray: "#0F172A",
+    mediumGray: "#475569",
+    dark: "#000000",
+    light: "#F6F7FB",
+    secondary: "#E5E7EB",
+    transparent: "#EEF2FF",
+    red: "#FF0000",
+    lightGray: "#F1F5F9",
+    error:"#94A3B8"
+  },
+
+  type: {
+    h1: { size: 28, lh: 34, weight: "700" },
+    h2: { size: 22, lh: 28, weight: "700" },
+    body: { size: 16, lh: 22, weight: "400" },
+    caption: { size: 13, lh: 18, weight: "400" },
+  },
+  padding: 16,
+  gap: 10,
+};

@@ -14,6 +14,7 @@ import WorkoutTimerScreen from "../screens/WorkoutTimerScreen";
 import WorkoutStepsScreen from "../screens/WorkoutStepsScreen";
 import WorkoutComplete from "../screens/WorkoutComplete";
 import DailyStep from "../screens/DailyStep";
+import Profile from "../screens/Profile";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -30,10 +31,12 @@ function MainTabs() {
             iconName = "calendar-outline";
           } else if (route.name === "Edit Plan") {
             iconName = "create-outline";
-          } else if (route.name === "Step") {
+          } else if (route.name === "DailyStep") {
             iconName = "footsteps-outline";
           } else if (route.name === "Settings") {
             iconName = "settings-outline";
+          } else if (route.name === "Profile") {
+            iconName = "man-outline";
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -64,7 +67,7 @@ function MainTabs() {
         }}
       /> */}
       <Tab.Screen
-        name="Step"
+        name="DailyStep"
         component={DailyStep}
         options={{
           title: "Günlük Adım",
@@ -75,6 +78,13 @@ function MainTabs() {
         component={SettingsScreen}
         options={{
           title: "Ayarlar",
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={Profile}
+        options={{
+          title: "Profil",
         }}
       />
     </Tab.Navigator>

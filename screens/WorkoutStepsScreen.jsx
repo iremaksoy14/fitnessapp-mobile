@@ -1,23 +1,13 @@
-import React, { useEffect, useState, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  Animated,
-  Easing,
-  Dimensions,
-} from "react-native";
+// screens/WorkoutStepsScreen.jsx
+import React, { useEffect, useState, useRef, useMemo } from "react";
+import { View, Text, Image, Animated, Easing } from "react-native";
 import Svg, { Circle, Defs, LinearGradient, Stop } from "react-native-svg";
-import { Audio } from "expo-av";
-import * as Speech from "expo-speech";
+// import * as Speech from "expo-speech";
 import ConfettiCannon from "react-native-confetti-cannon";
 import { saveExerciseForToday } from "../utils/storage";
 
-const RADIUS = 45;
-const STROKE_WIDTH = 6;
-const CIRCLE_LENGTH = 2 * Math.PI * RADIUS;
-const screenWidth = Dimensions.get("window").width;
+import { makeStyles } from "../helper/makeStyles";
+import { useScale } from "../helper/useScale";
 
 const motivationMessages = [
   "Harika gidiyorsun!",
@@ -28,16 +18,29 @@ const motivationMessages = [
 
 export default function WorkoutStepsScreen({ route, navigation }) {
   const { step, stepDuration } = route.params;
-  const [timeLeft, setTimeLeft] = useState(stepDuration);
+
+  const s = useStyles();
+  const { width, hs, fs } = useScale({ maxLayoutWidth: 700 });
+
+  // Ölçekli daire metrikleri
+  const RADIUS = hs(45);
+  const STROKE_WIDTH = hs(6);
+  const SIZE = hs(100);
+  const CIRCLE_LENGTH = useMemo(() => 2 * Math.PI * RADIUS, [RADIUS]);
+
+  const [timeLeft, setTimeLeft] = useState(Number(stepDuration) || 0);
   const [isStarted, setIsStarted] = useState(false);
   const [prepCountdown, setPrepCountdown] = useState(3);
   const [showConfetti, setShowConfetti] = useState(false);
 
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
-  const progress = timeLeft / stepDuration;
+  const progress = useMemo(
+    () => (stepDuration > 0 ? timeLeft / stepDuration : 0),
+    [timeLeft, stepDuration]
+  );
 
-  // 3-2-1 Animasyonu
+  // 3-2-1 animasyonu
   useEffect(() => {
     if (prepCountdown > 0) {
       Animated.sequence([
@@ -54,16 +57,12 @@ export default function WorkoutStepsScreen({ route, navigation }) {
         }),
       ]).start();
     }
-  }, [prepCountdown]);
+  }, [prepCountdown, scaleAnim]);
 
-  // Geri sayım ve sesli anons
+  // Hazırlık geri sayımı
   useEffect(() => {
     const countdownInterval = setInterval(() => {
-      setPrepCountdown((prev) => {
-        const next = prev - 1;
-        // if (next > 0) Speech.speak(next.toString());
-        return next;
-      });
+      setPrepCountdown((prev) => prev - 1);
     }, 1000);
 
     const startTimeout = setTimeout(() => {
@@ -78,136 +77,135 @@ export default function WorkoutStepsScreen({ route, navigation }) {
     };
   }, []);
 
-  // Süreyi geri say
+  // Süre geri sayım
   useEffect(() => {
     if (!isStarted || timeLeft <= 0) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
+    const t = setInterval(() => setTimeLeft((v) => v - 1), 1000);
+    return () => clearInterval(t);
   }, [isStarted, timeLeft]);
 
-  // Motivasyon mesajları
+  // Motivasyon mesajları (opsiyonel seslendirme)
   useEffect(() => {
     if (!isStarted) return;
-    const interval = setInterval(() => {
-      const message =
+    const id = setInterval(() => {
+      const msg =
         motivationMessages[
           Math.floor(Math.random() * motivationMessages.length)
         ];
-      // Speech.speak(message);
+      // Speech.speak(msg);
     }, 6000);
-    return () => clearInterval(interval);
+    return () => clearInterval(id);
   }, [isStarted]);
 
-  // Egzersiz bitince kayıt ve konfeti
+  // Bitiş
   useEffect(() => {
     if (timeLeft === 0 && isStarted) {
       saveExerciseForToday(step.name);
       setShowConfetti(true);
       setTimeout(() => navigation.goBack(), 2000);
     }
-  }, [timeLeft, isStarted]);
+  }, [timeLeft, isStarted, navigation, step.name]);
 
   useEffect(() => {
     navigation.setOptions({ title: step.name });
-  }, [navigation]);
+  }, [navigation, step.name]);
 
   return (
-    <View style={styles.container}>
-      {/* GIF ve Başlık */}
-      <View style={styles.gifWrapper}>
-        <Image
-          source={{ uri: step.gif }}
-          style={styles.gif}
-          resizeMode="contain"
-        />
-        <View style={styles.overlay} />
-        <Text style={styles.stepTitleOverlay}>{step.name}</Text>
-      </View>
-
-      {/* Geri Sayım */}
-      {!isStarted && prepCountdown > 0 && (
-        <View style={styles.fullscreenCountdown}>
-          <Animated.Text
-            style={[
-              styles.countdownText,
-              { transform: [{ scale: scaleAnim }] },
-            ]}
-          >
-            {prepCountdown}
-          </Animated.Text>
-        </View>
-      )}
-
-      {!isStarted && prepCountdown === 0 && (
-        <View style={styles.fullscreenCountdown}>
-          <Text style={styles.countdownText}>BAŞLA!</Text>
-        </View>
-      )}
-
-      {/* Sayaç */}
-      {isStarted && (
-        <View style={styles.timerWrapper}>
-          <Svg width={100} height={100}>
-            <Defs>
-              <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
-                <Stop offset="0%" stopColor="#436eee" />
-                <Stop offset="100%" stopColor="#67e8f9" />
-              </LinearGradient>
-            </Defs>
-            <Circle
-              cx={50}
-              cy={50}
-              r={RADIUS}
-              stroke="#e0e0e0"
-              strokeWidth={STROKE_WIDTH}
-              fill="none"
-            />
-            <Circle
-              cx={50}
-              cy={50}
-              r={RADIUS}
-              stroke="url(#grad)"
-              strokeWidth={STROKE_WIDTH}
-              fill="none"
-              strokeDasharray={CIRCLE_LENGTH}
-              strokeDashoffset={CIRCLE_LENGTH * (1 - progress)}
-              strokeLinecap="round"
-              rotation="-90"
-              origin="50, 50"
-            />
-          </Svg>
-          <Text style={styles.timerText}>{timeLeft} </Text>
-        </View>
-      )}
-
-      {/* İlerleme Barı */}
-      {isStarted && (
-        <View style={styles.progressBar}>
-          <View
-            style={[styles.progressFill, { width: `${progress * 100}%` }]}
+    <View style={s.screen}>
+      <View style={[s.container, { width }]}>
+        {/* GIF + başlık overlay */}
+        <View style={s.gifWrapper}>
+          <Image
+            source={{ uri: step.gif }}
+            style={s.gif}
+            resizeMode="contain"
           />
+          <View style={s.overlay} />
+          <Text style={s.stepTitleOverlay}>{step.name}</Text>
         </View>
-      )}
+
+        {/* Hazırlık sayacı */}
+        {!isStarted && prepCountdown > 0 && (
+          <View style={s.fullscreenCountdown}>
+            <Animated.Text
+              style={[s.countdownText, { transform: [{ scale: scaleAnim }] }]}
+            >
+              {prepCountdown}
+            </Animated.Text>
+          </View>
+        )}
+        {!isStarted && prepCountdown === 0 && (
+          <View style={s.fullscreenCountdown}>
+            <Text style={s.countdownText}>BAŞLA!</Text>
+          </View>
+        )}
+
+        {/* Zamanlayıcı */}
+        {isStarted && (
+          <View style={s.timerWrapper}>
+            <Svg width={SIZE} height={SIZE}>
+              <Defs>
+                <LinearGradient id="grad" x1="0" y1="0" x2="1" y2="1">
+                  <Stop offset="0%" stopColor="#436eee" />
+                  <Stop offset="100%" stopColor="#67e8f9" />
+                </LinearGradient>
+              </Defs>
+
+              <Circle
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={RADIUS}
+                stroke="#e0e0e0"
+                strokeWidth={STROKE_WIDTH}
+                fill="none"
+              />
+              <Circle
+                cx={SIZE / 2}
+                cy={SIZE / 2}
+                r={RADIUS}
+                stroke="url(#grad)"
+                strokeWidth={STROKE_WIDTH}
+                fill="none"
+                strokeDasharray={CIRCLE_LENGTH}
+                strokeDashoffset={CIRCLE_LENGTH * (1 - progress)}
+                strokeLinecap="round"
+                rotation="-90"
+                origin={`${SIZE / 2}, ${SIZE / 2}`}
+              />
+            </Svg>
+            <Text style={s.timerText}>{timeLeft}</Text>
+          </View>
+        )}
+
+        {/* Lineer ilerleme */}
+        {isStarted && (
+          <View style={s.progressBar}>
+            <View style={[s.progressFill, { width: `${progress * 100}%` }]} />
+          </View>
+        )}
+      </View>
 
       {/* Konfeti */}
       {showConfetti && (
-        <ConfettiCannon count={100} origin={{ x: screenWidth / 2, y: 0 }} />
+        <ConfettiCannon count={100} origin={{ x: width / 2, y: 0 }} />
       )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
+const useStyles = makeStyles(({ hs, fs }) => ({
+  screen: {
     flex: 1,
     backgroundColor: "#F9F9F9",
     alignItems: "center",
     position: "relative",
   },
+  container: {
+    alignSelf: "center",
+    padding: hs(16),
+  },
+
+  // Görsel alanı
   gifWrapper: {
     width: "100%",
     position: "relative",
@@ -215,29 +213,31 @@ const styles = StyleSheet.create({
   gif: {
     width: "100%",
     aspectRatio: 4 / 3,
+    borderRadius: hs(12),
   },
   overlay: {
-    // ...StyleSheet.absoluteFillObject,
     position: "absolute",
     top: 0,
     right: 0,
     bottom: 0,
     left: 0,
     backgroundColor: "rgba(0,0,0,0.3)",
+    borderRadius: hs(12),
   },
   stepTitleOverlay: {
     position: "absolute",
-    bottom: 20,
-    left: 20,
-    color: "white",
-    fontSize: 28,
-    fontWeight: "bold",
+    bottom: hs(20),
+    left: hs(20),
+    color: "#FFFFFF",
+    fontSize: fs(28),
+    fontWeight: "700",
   },
+
+  // Sayaç
   timerWrapper: {
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 30,
-  
+    marginTop: hs(30),
   },
   timerText: {
     position: "absolute",
@@ -245,34 +245,37 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     textAlign: "center",
-    fontSize: 28,
-    fontWeight: "bold",
+    fontSize: fs(28),
+    fontWeight: "700",
     color: "#436eee",
   },
+
+  // Hazırlık sayacı
   fullscreenCountdown: {
     position: "absolute",
-    top: 200,
+    top: hs(200),
     left: 0,
     right: 0,
     zIndex: 99,
     alignItems: "center",
-  
   },
   countdownText: {
-    fontSize: 64,
-    fontWeight: "bold",
+    fontSize: fs(64),
+    fontWeight: "700",
     color: "#436eee",
   },
+
+  // Lineer progress
   progressBar: {
-    height: 10,
-    width: "80%",
-    backgroundColor: "#ddd",
-    borderRadius: 5,
+    height: hs(10),
+    width: "100%", // container genişliği kadar
+    backgroundColor: "#DDDDDD",
+    borderRadius: hs(5),
     overflow: "hidden",
-    marginTop: 30,
+    marginTop: hs(30),
   },
   progressFill: {
     height: "100%",
     backgroundColor: "#436eee",
   },
-});
+}));

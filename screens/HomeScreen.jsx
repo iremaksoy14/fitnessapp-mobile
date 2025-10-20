@@ -4,11 +4,12 @@ import { View, Text, FlatList, Image, TouchableOpacity } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import exercisesData from "../data/exercises.js";
 import { makeStyles } from "../helper/makeStyles.js";
-import { useScale } from "../helper/useScale.js";
+import { useScale } from "../hooks/useScale.js";
 import { theme } from "../helper/theme.js";
+import { ScrollView } from "react-native-gesture-handler";
 
-const MIN_CARD = 156;              // tasarım px (Figma)
-const GUTTER_PX = theme.gap;       // tasarım px (ör. 12/16)
+const MIN_CARD = 156; // tasarım px (Figma)
+const GUTTER_PX = theme.gap; // tasarım px (ör. 12/16)
 
 export default function HomeScreen({ navigation }) {
   const [exercises, setExercises] = useState([]);
@@ -42,13 +43,22 @@ export default function HomeScreen({ navigation }) {
     >
       <View style={s.media}>
         <Image source={item.image} style={s.mediaImg} resizeMode="cover" />
-        <LinearGradient colors={["transparent", "rgba(0,0,0,0.55)"]} style={s.overlay} />
-        <Text numberOfLines={2} style={s.overlayTitle}>{item.title}</Text>
+        <LinearGradient
+          colors={["transparent", "rgba(0,0,0,0.55)"]}
+          style={s.overlay}
+        />
+        <Text numberOfLines={2} style={s.overlayTitle}>
+          {item.title}
+        </Text>
       </View>
 
       <View style={s.meta}>
-        <Text numberOfLines={1} style={s.metaTitle}>{item.title}</Text>
-        <Text numberOfLines={1} style={s.metaCat}>{item.category}</Text>
+        <Text numberOfLines={1} style={s.metaTitle}>
+          {item.title}
+        </Text>
+        <Text numberOfLines={1} style={s.metaCat}>
+          {item.category}
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -63,7 +73,10 @@ export default function HomeScreen({ navigation }) {
           keyExtractor={(it) => String(it.id)}
           numColumns={columns}
           key={columns} // kolon değişince layout’u yenile
-          contentContainerStyle={{ paddingHorizontal: gutter, paddingVertical: gutter }}
+          contentContainerStyle={{
+            paddingHorizontal: gutter,
+            paddingVertical: gutter,
+          }}
           columnWrapperStyle={{ columnGap: gutter }} // row gap: kartta marginBottom var
           showsVerticalScrollIndicator={false}
         />
@@ -85,14 +98,20 @@ const useStyles = makeStyles(({ hs, fs }) => ({
   // Görsel alanı
   media: {
     width: "100%",
-    aspectRatio: 4 / 5,           // 3/4 veya 1/1 de deneyebilirsin
+    aspectRatio: 4 / 5, // 3/4 veya 1/1 de deneyebilirsin
     backgroundColor: "#F3F4F6",
     position: "relative",
   },
   mediaImg: { width: "100%", height: "100%" },
 
   // Overlay başlık
-  overlay: { position: "absolute", left: 0, right: 0, bottom: 0, height: "45%" },
+  overlay: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "45%",
+  },
   overlayTitle: {
     position: "absolute",
     left: hs(8),
@@ -110,5 +129,10 @@ const useStyles = makeStyles(({ hs, fs }) => ({
     backgroundColor: "#F7F7F7",
   },
   metaTitle: { fontSize: fs(14), fontWeight: "700", color: "#111827" },
-  metaCat: { marginTop: hs(2), fontSize: fs(12), color: "#6B7280", fontWeight: "600" },
+  metaCat: {
+    marginTop: hs(2),
+    fontSize: fs(12),
+    color: "#6B7280",
+    fontWeight: "600",
+  },
 }));

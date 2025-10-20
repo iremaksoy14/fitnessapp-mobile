@@ -4,7 +4,7 @@ import { makeStyles } from "../helper/makeStyles";
 
 const Badge = ({ title, icon, itemWidth,style }) => {
   const s = useStyles();
-  console.log("itemWidth", itemWidth);
+ 
   return (
     <View style={[s.badge, { width: itemWidth }, style]}>
       <View style={s.badgeIcon}>{icon || <Text style={s.emoji}>🏅</Text>}</View>

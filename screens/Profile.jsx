@@ -9,6 +9,7 @@ import {
   ScrollView,
   StyleSheet,
   FlatList,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { theme } from "../helper/theme";
@@ -17,22 +18,20 @@ import ProgressBar from "../components/ProgressBar";
 import Badge from "../components/BadgeSection";
 import SectionArea from "../components/SectionArea";
 import StatCard from "../components/StatCard";
+import { useNavigation } from "@react-navigation/native";
 import ActionRow from "../components/ActionRow";
 
 import { makeStyles } from "../helper/makeStyles";
-import { useScale } from "../helper/useScale";
-
+import { useScale } from "../hooks/useScale";
+import { useDispatch, useSelector } from "react-redux";
+import { selectProfile } from "../store";
+import { signOut } from "../store/profileSlice";
+import { getInitials } from "../helper/getInitials";
+import ProfileForm from "../components/ProfileForm";
 // Grid/spacing parametreleri
 const VISIBLE_COUNT = 3;
 
-
 export default function Profile({
-  user = {
-    name: "İrem Aksoy",
-    username: "aksoyirem612@gmail.com",
-    avatar:
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=400&auto=format&fit=crop",
-  },
   stats = {
     weekSteps: 24000,
     weekMinutes: 185,
@@ -55,10 +54,53 @@ export default function Profile({
   onExportData,
 }) {
   const s = useStyles();
+  const dispatch = useDispatch();
   const { width, hs } = useScale();
+  const navigation = useNavigation();
 
   const [dailyGoal, setDailyGoal] = useState(100);
   const [todaySteps, setTodayStep] = useState(70);
+
+  // ✅ Redux'tan profil bilgisi
+  const profile = useSelector(selectProfile);
+  const displayName = profile?.name ?? "Profil";
+  const displayUsername = profile?.email ?? ""; // email tutmuyorsan boş kalsın
+
+  const hasAvatar = !!profile?.avatarUri;
+  const initials = getInitials(displayName);
+
+  const handleDeleteAccount = useCallback(() => {
+    Alert.alert(
+      "Hesabı Sil",
+      "Bu işlem geri alınamaz. Profil ve yerel veriler silinecek. Emin misin?",
+      [
+        { text: "Vazgeç", style: "cancel" },
+        {
+          text: "Evet, sil",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              // 1) İsteğe bağlı: yerel anahtarları temizle
+              await AsyncStorage.multiRemove([
+                "stepGoal",
+                "currentStep",
+                // başka yerel anahtarların varsa ekle
+              ]);
+              // 2) Redux profilini sıfırla (redux-persist bunu kalıcılar)
+              dispatch(signOut());
+              // 3) Onboarding’e resetle (stack temiz, flicker yok)
+              //  navigation.reset({
+              //    index: 0,
+              //    routes: [{ name: "Onboarding" }],
+              //  });
+            } catch (e) {
+              console.warn("Hesap silme hatası:", e);
+            }
+          },
+        },
+      ]
+    );
+  }, [dispatch, navigation]);
 
   useFocusEffect(
     useCallback(() => {
@@ -84,29 +126,38 @@ export default function Profile({
 
   // Rozet (Badge) genişliği: 3 görünür item + aralarındaki boşluklara göre
   const itemWidth = useMemo(() => {
-    return Math.floor(
-      (innerW - gutter * (VISIBLE_COUNT - 1)) / VISIBLE_COUNT
-    );
+    return Math.floor((innerW - gutter * (VISIBLE_COUNT - 1)) / VISIBLE_COUNT);
   }, [innerW, gutter]);
 
   const goalUnit =
     goal.type === "kcal" ? "kcal" : goal.type === "minutes" ? "dk" : "adım";
 
-    console.log("widthhhhhhhhh",width)
   return (
     <ScrollView style={s.screen} contentContainerStyle={{}}>
       {/* İçeriği clamp edilen genişliğe oturt ve ortala */}
       <View style={{ width, alignSelf: "center", padding }}>
         {/* HEADER */}
-       
         <View style={s.headerCard}>
-          <Image source={{ uri: user.avatar }} style={s.avatar} />
+          {/* {
+        hasAvatar ? (
+            <Image source={{ uri: displayAvatar }} style={s.avatar} />
+          ) : (
+            <View style={s.avatarFallback}>
+              <Text style={s.avatarInitials}>{initials || "?"}</Text>
+            </View>
+          )} */}
+          <View style={s.avatarFallback}>
+            <Text style={s.avatarInitials}>{initials || "?"}</Text>
+          </View>
+
           <View style={{ flex: 1 }}>
-            <Text style={s.name}>{user.name}</Text>
-            <Text style={s.username}>{user.username}</Text>
+            <Text style={s.name}>{displayName}</Text>
+            {!!displayUsername && (
+              <Text style={s.username}>{displayUsername}</Text>
+            )}
           </View>
           <TouchableOpacity
-            onPress={onEditProfile}
+           onPress={() => navigation.navigate("EditProfile")}
             style={s.editBtn}
             activeOpacity={0.9}
           >
@@ -119,8 +170,10 @@ export default function Profile({
           <View style={s.statsRow}>
             <StatCard label="Adım" value={formatNumber(stats.weekSteps)} />
             <StatCard label="Süre" value={`${stats.weekMinutes} dk`} />
-            
-            <StatCard label="Kalori" value={`${stats.weekCalories}`} sub="kcal"
+            <StatCard
+              label="Kalori"
+              value={`${stats.weekCalories}`}
+              sub="kcal"
             />
           </View>
         </SectionArea>
@@ -146,7 +199,7 @@ export default function Profile({
               / {formatNumber(dailyGoal)} {goalUnit}
             </Text>
             <ProgressBar value={todaySteps} max={dailyGoal} />
-          </View>  
+          </View>
         </SectionArea>
 
         {/* BAŞARILAR */}
@@ -162,13 +215,12 @@ export default function Profile({
             )}
             horizontal
             showsHorizontalScrollIndicator={false}
-            // contentContainerStyle={{ paddingVertical: hs(4) }}
             ItemSeparatorComponent={() => <View style={{ width: gutter }} />}
           />
         </SectionArea>
 
         {/*  EYLEMLER */}
-        <SectionArea title="Eylemler">
+        {/* <SectionArea title="Eylemler">
           <View style={s.card}>
             <ActionRow
               label="Apple Health / Google Fit"
@@ -195,22 +247,24 @@ export default function Profile({
               onPress={onOpenSubscriptions}
             />
           </View>
-        </SectionArea>
+        </SectionArea> */}
 
         {/* GİZLİLİK */}
         <SectionArea title="Gizlilik">
           <View style={s.card}>
-            <ActionRow
+            {/* <ActionRow
               label="Gizli Mod"
               hint="İlerleme verilerini gizle"
               onPress={() => {}}
-            />
+            /> */}
             <View style={s.divider} />
             <ActionRow
               label="Hesabı Sil"
               hint="Geri alınamaz"
-              onPress={() => {}}
-              right={<Text style={[s.rowChevron, { color: "#E11D48" }]}>›</Text>}
+              onPress={handleDeleteAccount}
+              right={
+                <Text style={[s.rowChevron, { color: "#E11D48" }]}>›</Text>
+              }
             />
           </View>
         </SectionArea>
@@ -236,15 +290,28 @@ const useStyles = makeStyles(({ hs, fs }) => ({
     shadowRadius: hs(6),
     shadowOffset: { width: 0, height: hs(2) },
   },
-  avatar: { 
+  avatar: {
     width: hs(60),
-     height: hs(60),
-      borderRadius: hs(30)
-     },
-  name: { 
+    height: hs(60),
+    borderRadius: hs(30),
+  },
+  avatarFallback: {
+    width: hs(40),
+    height: hs(40),
+    borderRadius: hs(20),
+    backgroundColor: "#E5E7EB",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  avatarInitials: {
+    fontSize: fs(18),
+    fontWeight: "700",
+    color: "#374151",
+  },
+  name: {
     fontSize: fs(16),
-    fontWeight: "700", 
-    color: theme.colors.darkGray 
+    fontWeight: "700",
+    color: theme.colors.darkGray,
   },
   username: { color: theme.colors.gray, marginTop: hs(2), fontSize: fs(12) },
 
@@ -271,10 +338,13 @@ const useStyles = makeStyles(({ hs, fs }) => ({
     shadowRadius: hs(6),
     shadowOffset: { width: 0, height: hs(2) },
   },
-  goalTitle: { fontWeight: "700", color: theme.colors.darkGray, fontSize: fs(16) },
+  goalTitle: {
+    fontWeight: "700",
+    color: theme.colors.darkGray,
+    fontSize: fs(16),
+  },
   goalCurrent: { color: theme.colors.mediumGray, fontSize: fs(14) },
 
-  // actions
   card: {
     backgroundColor: theme.colors.bg,
     borderRadius: hs(16),
@@ -286,7 +356,10 @@ const useStyles = makeStyles(({ hs, fs }) => ({
     shadowOffset: { width: 0, height: hs(2) },
   },
 
-  divider: { height: StyleSheet.hairlineWidth, backgroundColor: theme.colors.lightGray },
+  divider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: theme.colors.lightGray,
+  },
 
   connectBadge: {
     backgroundColor: "#E0E7FF",

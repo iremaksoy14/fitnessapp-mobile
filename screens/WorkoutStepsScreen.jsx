@@ -7,7 +7,7 @@ import ConfettiCannon from "react-native-confetti-cannon";
 import { saveExerciseForToday } from "../utils/storage";
 
 import { makeStyles } from "../helper/makeStyles";
-import { useScale } from "../helper/useScale";
+import { useScale } from "../hooks/useScale";
 
 const motivationMessages = [
   "Harika gidiyorsun!",
@@ -265,10 +265,9 @@ const useStyles = makeStyles(({ hs, fs }) => ({
     color: "#436eee",
   },
 
-  // Lineer progress
   progressBar: {
     height: hs(10),
-    width: "100%", // container genişliği kadar
+    width: "100%",
     backgroundColor: "#DDDDDD",
     borderRadius: hs(5),
     overflow: "hidden",

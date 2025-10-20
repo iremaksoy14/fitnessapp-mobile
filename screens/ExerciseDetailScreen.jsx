@@ -14,7 +14,7 @@ import moment from "moment";
 import SwitchSelector from "react-native-switch-selector";
 
 import { makeStyles } from "../helper/makeStyles";
-import { useScale } from "../helper/useScale";
+import { useScale } from "../hooks/useScale";
 
 export default function ExerciseDetailScreen({ route, navigation }) {
   const { exercise } = route.params;
@@ -42,7 +42,10 @@ export default function ExerciseDetailScreen({ route, navigation }) {
   );
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={{ alignItems: "center" }}>
+    <ScrollView
+      style={s.screen}
+      contentContainerStyle={{ alignItems: "center" }}
+    >
       {/* İçerik clamp + ortalama */}
       <View style={[s.container, { width }]}>
         {exercise.video ? (
@@ -86,7 +89,12 @@ export default function ExerciseDetailScreen({ route, navigation }) {
               <TouchableOpacity
                 disabled={isStepDone}
                 style={[s.stepStartButton, isStepDone && s.disabledStepItem]}
-                hitSlop={{ top: hs(6), bottom: hs(6), left: hs(6), right: hs(6) }}
+                hitSlop={{
+                  top: hs(6),
+                  bottom: hs(6),
+                  left: hs(6),
+                  right: hs(6),
+                }}
                 onPress={() =>
                   navigation.navigate("WorkoutSteps", {
                     step,

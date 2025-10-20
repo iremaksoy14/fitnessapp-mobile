@@ -11,7 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { makeStyles } from "../helper/makeStyles";
-import { useScale } from "../helper/useScale";
+import { useScale } from "../hooks/useScale";
 
 export default function SettingsScreen() {
   const s = useStyles();

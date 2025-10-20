@@ -17,7 +17,7 @@ import { getExerciseLogs } from "../utils/storage";
 import moment from "moment";
 import { LinearGradient } from "expo-linear-gradient";
 import { makeStyles } from "../helper/makeStyles";
-import { useScale } from "../helper/useScale";
+import { useScale } from "../hooks/useScale";
 
 export default function CalendarScreen({ navigation }) {
   const s = useStyles();

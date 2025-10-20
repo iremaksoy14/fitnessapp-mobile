@@ -3,6 +3,9 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
+import { useSelector } from "react-redux";
+import { selectHasProfile } from "../store";
+
 import HomeScreen from "../screens/HomeScreen";
 import CalendarScreen from "../screens/CalendarScreen";
 import SettingsScreen from "../screens/SettingsScreen";
@@ -15,6 +18,9 @@ import WorkoutStepsScreen from "../screens/WorkoutStepsScreen";
 import WorkoutComplete from "../screens/WorkoutComplete";
 import DailyStep from "../screens/DailyStep";
 import Profile from "../screens/Profile";
+import EditProfileScreen from "../screens/EditProfileScreen";
+import OnboardingScreen from "../screens/OnboardingScreen";
+
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
@@ -92,9 +98,12 @@ function MainTabs() {
 }
 
 export default function Navigation() {
+  const hasProfile = useSelector(selectHasProfile);
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
+      { hasProfile ? <>
         <Stack.Screen
           name="Main"
           component={MainTabs}
@@ -114,6 +123,9 @@ export default function Navigation() {
           component={WorkoutComplete}
           options={{ headerShown: false }}
         />
+        <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: "Profili Düzenle" }} />
+      </> : <Stack.Screen name="Onboarding" component={OnboardingScreen} />}
+      
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { View, Text } from "react-native";
 import { makeStyles } from "../helper/makeStyles";
-import { useScale } from "../helper/useScale";
+import { useScale } from "../hooks/useScale";
 
 export default function TimerScreen({ route, navigation }) {
   const { duration } = route.params; // saniye
